@@ -1,0 +1,6 @@
+span.chip {
+    border: 1px solid white;
+    padding: 2px 4px;
+    margin-right: 4px;
+    border-radius: 5px;
+}

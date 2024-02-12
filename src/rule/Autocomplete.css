@@ -1,0 +1,36 @@
+.autocomplete {
+    /*the container must be positioned relative:*/
+    position: relative;
+    display: inline-block;
+}
+
+input {
+    border: 1px solid transparent;
+    padding: 5px 10px;
+    font-size: 16px;
+}
+
+.autocomplete-items {
+    position: absolute;
+    border-bottom: none;
+    border-top: none;
+    z-index: 99;
+    top: 100%;
+    left: 0;
+    right: 0;
+}
+
+.autocomplete-items div {
+    cursor: pointer;
+    padding: 5px 10px;
+    border: 1px solid #d4d4d4;
+    
+}
+
+.autocomplete-items div:hover {
+    background-color: #626262;
+}
+
+.autocomplete-items .focused {
+    background-color: #0081c2;
+}
