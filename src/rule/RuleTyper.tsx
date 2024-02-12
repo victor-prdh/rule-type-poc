@@ -9,7 +9,10 @@ type RuleTyperProps = {
 
 const watchedKeyDown: string[] = ['Enter', 'Backspace', 'ArrowDown', 'ArrowUp']
 
-const steps: string[] = ['identifier', 'subselect', 'condition', 'value'];
+const step1: string = 'identifier';
+const step2: string = 'subselect';
+const step3: string = 'condition';
+const step4: string = 'value';
 
 const allPossibleInputs: PossiblesInputs = [
     {label: 'Attribut', identifier: 'attribute', subselect: [
@@ -28,7 +31,7 @@ const RuleTyper: FunctionComponent<RuleTyperProps> = () => {
     const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
     const [possibleInputs, setPossibleInputs] = useState<PossiblesInputs>(allPossibleInputs)
     const [possibleInputFocused, setPossibleInputFocused] = useState<number>(0)
-    const [step, setStep] = useState<number>(0)
+    const [step, setStep] = useState<string>(step1)
 
     const [rules, setRules] = useState<Rules>([])
     const [rule, setRule] = useState<WipRule>({})
@@ -36,6 +39,7 @@ const RuleTyper: FunctionComponent<RuleTyperProps> = () => {
 
     useEffect(() => filterPossibleInputs(), [inputValue])
     useEffect(() => handleFocusedInput(), [possibleInputs, possibleInputFocused])
+    useEffect(() => handleChangeStep(), [step])
 
     const handleInputChange = (e: ChangeEvent) => {
         const target = e.target as HTMLInputElement
@@ -98,9 +102,20 @@ const RuleTyper: FunctionComponent<RuleTyperProps> = () => {
     }
 
     const filterPossibleInputs = () => {
-        let currentPossibleInputs = allPossibleInputs.filter(
-            possibleInputs => possibleInputs.label.toUpperCase().startsWith(inputValue.toUpperCase())
-        )
+        let currentPossibleInputs: PossiblesInputs = [];
+
+        if (step === step1) {
+            currentPossibleInputs = allPossibleInputs.filter(
+                possibleInputs => possibleInputs.label.toUpperCase().startsWith(inputValue.toUpperCase())
+            )
+        }
+
+        if (step === step2 && rule.input?.subselect) {
+            currentPossibleInputs = rule.input.subselect.filter(
+                possibleInputs => possibleInputs.label.toUpperCase().startsWith(inputValue.toUpperCase())
+            )
+        }
+        
 
         setPossibleInputs(currentPossibleInputs)
     }
@@ -116,28 +131,62 @@ const RuleTyper: FunctionComponent<RuleTyperProps> = () => {
     }
 
     const handleValue = (input: any) => {
-        if (steps[step] === 'identifier' && !possibleInputs[input]) {
+        if (step === step1 && !possibleInputs[input]) {
             alert('data non valide')
             return
         }
 
-        if(steps[step] === 'identifier') {
+        if(step === step1) {
+            console.log(possibleInputs[input]);
+            
             setRule({input: possibleInputs[input]})
-            setStep(1)
+            setStep(step2)
+        }
+
+        if(step === step2) {
+            setRule({
+                ...rule,
+                subselect: possibleInputs[input].identifier
+            })
+
+            setStep(step2)            
         }
 
 
         setSavedInput([
             ...savedInput,
-            possibleInputs[possibleInputFocused]
+            possibleInputs[input]
         ])
 
-        setInputValue('')
-        setPossibleInputs(allPossibleInputs)
+        setInputValue('')        
     }
 
     const clickOnComplete = (input: number) => {
+        console.log(input);
+        
         handleValue(input)
+    }
+
+    const handleChangeStep = () => {
+        console.log(rule, step);
+        
+        if (step === step1) {
+            return
+        }
+
+        if(step !== step1 && !rule.input) {
+            setRule({});
+            setStep(step1)
+            setPossibleInputs(allPossibleInputs)
+        }
+
+        if(step === step2) {
+            if(!rule.input?.subselect) setStep(step3);
+            else setPossibleInputs(rule.input.subselect)
+
+            return
+        }
+        
     }
 
     return <>
@@ -159,7 +208,7 @@ const RuleTyper: FunctionComponent<RuleTyperProps> = () => {
                     onClickCallback={clickOnComplete}
                 />
             </div>
-            <span>step: {steps[step]}</span>
+            <span>step: {step}</span>
         </div>
     </>
 }
